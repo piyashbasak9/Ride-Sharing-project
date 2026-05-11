@@ -68,6 +68,8 @@ class LoginView(APIView):
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
@@ -88,6 +90,8 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 # --- Token Management ---
 class MyTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         token = Token.objects.filter(user=request.user, status='active').first()
         if token:
@@ -138,6 +142,8 @@ class CreateTokenView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class EditTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def put(self, request):
         token = Token.objects.filter(user=request.user, status='active').first()
         if not token:
@@ -148,13 +154,12 @@ class EditTokenView(APIView):
         serializer = TokenCreateSerializer(token, data=request.data, partial=True)
         if serializer.is_valid():
             token = serializer.save()
-            token.created_at = timezone.now()  # Reset countdown
-            token.updated_at = timezone.now()
-            token.save()
             return Response(TokenSerializer(token).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RefreshTokenView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
         token = Token.objects.filter(user=request.user, status='active').first()
         if not token:
@@ -168,12 +173,13 @@ class RefreshTokenView(APIView):
         if new_lat is not None and new_lng is not None:
             token.latitude = new_lat
             token.longitude = new_lng
-        token.created_at = timezone.now()
-        token.updated_at = timezone.now()
-        token.save()
+            token.save()
+        return Response(TokenSerializer(token).data)
         return Response(TokenSerializer(token).data)
 
 class NearbyTokensView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         lat = request.query_params.get('lat')
         lng = request.query_params.get('lng')
@@ -194,6 +200,8 @@ class NearbyTokensView(APIView):
 
 # --- Requests ---
 class SendRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
         token_id = request.data.get('token_id')
         try:
@@ -212,6 +220,8 @@ class SendRequestView(APIView):
         return Response(RequestSerializer(req).data, status=status.HTTP_201_CREATED)
 
 class IncomingRequestsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         # Requests sent to user's active token(s) - but user has only one active token
         user_token = Token.objects.filter(user=request.user, status='active').first()
@@ -222,6 +232,8 @@ class IncomingRequestsView(APIView):
         return Response(serializer.data)
 
 class AcceptRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, request_id):
         try:
             req = Request.objects.get(id=request_id, to_token__user=request.user, status='pending')
@@ -245,6 +257,8 @@ class AcceptRequestView(APIView):
         return Response({'message': 'Request accepted', 'connection_id': conn.id})
 
 class RejectRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def delete(self, request, request_id):
         try:
             req = Request.objects.get(id=request_id, to_token__user=request.user, status='pending')
@@ -255,6 +269,8 @@ class RejectRequestView(APIView):
 
 # --- Connections ---
 class ConnectionsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         connections = Connection.objects.filter(user1=request.user) | Connection.objects.filter(user2=request.user)
         serializer = ConnectionSerializer(connections, many=True, context={'request': request})
