@@ -22,6 +22,7 @@ export default function Input({
       <View
         style={[
           styles.inputWrapper,
+          multiline && { alignItems: 'flex-start', paddingTop: SPACING.md },
           isFocused && styles.inputWrapperFocused,
           error && styles.inputWrapperError,
         ]}
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: multiline ? 'flex-start' : 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.white,
     borderWidth: 1.5,
     borderColor: COLORS.gray200,
