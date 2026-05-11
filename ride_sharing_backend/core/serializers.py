@@ -57,6 +57,11 @@ class ConnectionSerializer(serializers.ModelSerializer):
         fields = ['id', 'other_user', 'token_info', 'created_at']
 
     def get_other_user(self, obj):
-        user = self.context['request'].user
-        other = obj.user2 if obj.user1 == user else obj.user1
-        return UserSerializer(other).data
+        try:
+            user = self.context.get('request').user if self.context.get('request') else None
+            if not user:
+                return None
+            other = obj.user2 if obj.user1 == user else obj.user1
+            return UserSerializer(other).data
+        except (AttributeError, KeyError):
+            return None
