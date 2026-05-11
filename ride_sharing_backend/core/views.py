@@ -175,7 +175,6 @@ class RefreshTokenView(APIView):
             token.longitude = new_lng
             token.save()
         return Response(TokenSerializer(token).data)
-        return Response(TokenSerializer(token).data)
 
 class NearbyTokensView(APIView):
     permission_classes = [permissions.IsAuthenticated]
